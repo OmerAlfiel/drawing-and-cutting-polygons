@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polygon Drawing and Cutting</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        canvas {
+            border: 2px solid #333;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+        #instructions {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            background-color: #e0e0e0;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #areaResult {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h3>Polygon Drawing and Cutting</h3>
+    <canvas id="canvas" width="600" height="400"></canvas>
+    <div id="instructions">
+        <p>Click to add points for the polygon. Once finished, press "C" to close the shape.</p>
+        <p>Draw a line by clicking two points to cut the polygon. Then, press "Calculate Area".</p>
+    </div>
+    <button onclick="calculateArea()">Calculate Area</button>
+    <button onclick="resetCanvas()">Reset</button>
+    <p id="areaResult"></p>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+        let isClosed = false;
+        let cutLine = [];
+
+        canvas.addEventListener('click', (event) => {
+            if (isClosed) return;
+
+            const { offsetX, offsetY } = event;
+            points.push({ x: offsetX, y: offsetY });
+            drawPolygon();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'c' || event.key === 'C') {
+                isClosed = true;
+                drawPolygon(true);
+            }
+        });
+
+        function drawPolygon(close = false) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            points.forEach((point, index) => {
+                if (index === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            if (close) ctx.closePath();
+            ctx.strokeStyle = "#007bff";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawCutLine(pointA, pointB) {
+            ctx.beginPath();
+            ctx.moveTo(pointA.x, pointA.y);
+            ctx.lineTo(pointB.x, pointB.y);
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.strokeStyle = "#007bff";
+        }
+
+        canvas.addEventListener('click', (event) => {
+            if (!isClosed) return;
+
+            const { offsetX, offsetY } = event;
+            cutLine.push({ x: offsetX, y: offsetY });
+            if (cutLine.length === 2) {
+                drawCutLine(cutLine[0], cutLine[1]);
+                // Implement polygon cutting logic here
+                cutPolygon();
+                cutLine = [];
+            }
+        });
+
+        function calculateArea() {
+            if (!isClosed) return;
+
+            let area = 0;
+            for (let i = 0; i < points.length; i++) {
+                const j = (i + 1) % points.length;
+                area += (points[i].x * points[j].y) - (points[j].x * points[i].y);
+            }
+            area = Math.abs(area / 2);
+            document.getElementById('areaResult').innerText = `Area: ${area.toFixed(2)} square units`;
+        }
+
+        function resetCanvas() {
+            points = [];
+            isClosed = false;
+            cutLine = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('areaResult').innerText = '';
+        }
+
+        function cutPolygon() {
+            // Here you would implement the logic to cut the polygon using the cutLine points
+            // This is a more complex task and requires additional geometric computations.
+            alert("Polygon cutting feature is under construction.");
+        }
+    </script>
+</body>
+</html>
